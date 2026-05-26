@@ -42,11 +42,10 @@ export default function AdminPage() {
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
-      {/* TITOLO SEMPLICE (L'header è ora nel Layout globale) */}
+      {/* TITOLO PULITO - L'HEADER È GESTITO DAL LAYOUT GLOBALE */}
       <h1 className="text-3xl font-bold text-gray-800 mb-8">Gestione Dipendenti</h1>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* FORM INSERIMENTO */}
         <div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-md border-t-4 border-red-900">
           <h2 className="text-xl font-semibold mb-6 flex items-center gap-2"><UserPlus /> Nuovo Dipendente</h2>
           <form onSubmit={handleAddEmployee} className="space-y-4">
@@ -58,7 +57,6 @@ export default function AdminPage() {
           </form>
         </div>
 
-        {/* TABELLA DIPENDENTI */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow-md overflow-hidden">
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b">

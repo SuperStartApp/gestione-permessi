@@ -25,12 +25,14 @@ export default function AdminHome() {
       title: 'Calendario',
       description: 'Visualizza le assenze nel tempo',
       icon: <Calendar size={40} />,
+      color: 'bg-green-600',
       path: '/admin/calendar'
     },
     {
       title: 'Statistiche',
       description: 'Grafici e report sull\'azienda',
       icon: <BarChart3 size={40} />,
+      color: 'bg-purple-600',
       path: '/admin/stats'
     },
   ];
@@ -38,7 +40,6 @@ export default function AdminHome() {
   return (
     <main className="min-h-screen bg-gray-100 p-6 md:p-12">
       <div className="max-w-5xl mx-auto">
-        
         <div className="flex items-center gap-4 mb-12">
           <button onClick={() => router.push('/')} className="p-2 hover:bg-gray-200 rounded-full transition">
             <ArrowLeft size={24} />
@@ -53,6 +54,7 @@ export default function AdminHome() {
               onClick={() => router.push(item.path)}
               className="flex flex-col items-start p-8 bg-white rounded-2xl shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 text-left group"
             >
+              {/* QUI ABBIAMO AGGIUNTO IL CONTENITORE PER TUTTE LE ICONE */}
               <div className={`${item.color} text-white p-4 rounded-xl mb-6 group-hover:scale-110 transition-transform`}>
                 {item.icon}
               </div>

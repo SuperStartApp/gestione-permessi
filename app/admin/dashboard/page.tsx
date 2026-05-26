@@ -2,13 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { UserPlus, Copy, Link as LinkIcon, LayoutDashboard, Trash2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { UserPlus, Copy, Link as LinkIcon, Trash2 } from 'lucide-react';
 
 type Employee = { id: string; nome: string; cognome: string; ruolo: string; telefono: string; pin: string; unique_token: string; };
 
 export default function AdminPage() {
-  const router = useRouter();
   const [nome, setNome] = useState('');
   const [cognome, setCognome] = useState('');
   const [ruolo, setRuolo] = useState('');
@@ -43,54 +41,48 @@ export default function AdminPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-6xl mx-auto">
-        <header className="flex items-center justify-between mb-8">
-          {/* RIMOSSA LA FRECCIA PER PULIZIA MOBILE */}
-          <h1 className="text-3xl font-bold text-gray-800">Gestione Dipendenti</h1>
-          
-          <button onClick={() => router.push('/admin/dashboard')} className="flex items-center gap-2 bg-red-900 text-white px-4 py-2 rounded-lg hover:bg-red-800 transition shadow-md">
-            <LayoutDashboard size={20} /> <span className="hidden sm:inline">Torre di Controllo</span>
-          </button>
-        </header>
+    <div className="p-8 max-w-6xl mx-auto">
+      {/* TITOLO SEMPLICE (L'header è ora nel Layout globale) */}
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">Gestione Dipendenti</h1>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* FORM INSERIMENTO */}
+        <div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-md border-t-4 border-red-900">
+          <h2 className="text-xl font-semibold mb-6 flex items-center gap-2"><UserPlus /> Nuovo Dipendente</h2>
+          <form onSubmit={handleAddEmployee} className="space-y-4">
+            <input type="text" placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} className="w-full p-2 border rounded" required />
+            <input type="text" placeholder="Cognome" value={cognome} onChange={(e) => setCognome(e.target.value)} className="w-full p-2 border rounded" required />
+            <input type="text" placeholder="Ruolo" value={ruolo} onChange={(e) => setRuolo(e.target.value)} className="w-full p-2 border rounded" required />
+            <input type="text" placeholder="Telefono" value={telefono} onChange={(e) => setTelefono(e.target.value)} className="w-full p-2 border rounded" required />
+            <button type="submit" className="w-full bg-red-900 text-white py-2 rounded hover:bg-red-800 transition">Genera Accesso</button>
+          </form>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-md border-t-4 border-red-900">
-            <h2 className="text-xl font-semibold mb-6 flex items-center gap-2"><UserPlus /> Nuovo Dipendente</h2>
-            <form onSubmit={handleAddEmployee} className="space-y-4">
-              <input type="text" placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} className="w-full p-2 border rounded" required />
-              <input type="text" placeholder="Cognome" value={cognome} onChange={(e) => setCognome(e.target.value)} className="w-full p-2 border rounded" required />
-              <input type="text" placeholder="Ruolo" value={ruolo} onChange={(e) => setRuolo(e.target.value)} className="w-full p-2 border rounded" required />
-              <input type="text" placeholder="Telefono" value={telefono} onChange={(e) => setTelefono(e.target.value)} className="w-full p-2 border rounded" required />
-              <button type="submit" className="w-full bg-red-900 text-white py-2 rounded hover:bg-red-800 transition">Genera Accesso</button>
-            </form>
-          </div>
-
-          <div className="lg:col-span-2 bg-white rounded-xl shadow-md overflow-hidden">
-            <table className="w-full text-left">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="p-4">Dipendente</th>
-                  <th className="p-4">PIN</th>
-                  <th className="p-4 text-center">Azioni</th>
+        {/* TABELLA DIPENDENTI */}
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-md overflow-hidden">
+          <table className="w-full text-left">
+            <thead className="bg-gray-50 border-b">
+              <tr>
+                <th className="p-4">Dipendente</th>
+                <th className="p-4">PIN</th>
+                <th className="p-4 text-center">Azioni</th>
+              </tr>
+            </thead>
+            <tbody>
+              {employees.map((emp) => (
+                <tr key={emp.id} className="border-b hover:bg-gray-50 transition">
+                  <td className="p-4 font-bold">{emp.nome} {emp.cognome} <br/><span className="text-xs text-gray-500 font-normal">{emp.ruolo}</span></td>
+                  <td className="p-4 font-mono font-bold text-yellow-700">{emp.pin}</td>
+                  <td className="p-4 flex justify-center gap-2">
+                    <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/access/${emp.unique_token}`)} className="text-blue-600 p-2 hover:bg-blue-50 rounded" title="Copia Link"><LinkIcon size={18} /></button>
+                    <button onClick={() => deleteEmployee(emp.id)} className="text-red-600 p-2 hover:bg-red-50 rounded" title="Elimina"><Trash2 size={18} /></button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {employees.map((emp) => (
-                  <tr key={emp.id} className="border-b hover:bg-gray-50 transition">
-                    <td className="p-4 font-bold">{emp.nome} {emp.cognome} <br/><span className="text-xs text-gray-500 font-normal">{emp.ruolo}</span></td>
-                    <td className="p-4 font-mono font-bold text-yellow-700">{emp.pin}</td>
-                    <td className="p-4 flex justify-center gap-2">
-                      <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/access/${emp.unique_token}`)} className="text-blue-600 p-2 hover:bg-blue-50 rounded" title="Copia Link"><LinkIcon size={18} /></button>
-                      <button onClick={() => deleteEmployee(emp.id)} className="text-red-600 p-2 hover:bg-red-50 rounded" title="Elimina"><Trash2 size={18} /></button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

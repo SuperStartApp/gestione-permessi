@@ -1,69 +1,74 @@
 'use client';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import { UserPlus, Copy, Link as LinkIcon, Trash2 } from 'lucide-react';
 
-import { useRouter } from 'next/navigation';
-import { Users, LayoutDashboard, Calendar, BarChart3, ArrowLeft } from 'lucide-react';
+export default function AdminPage() {
+  const [nome, setNome] = useState('');
+  const [cognome, setCognome] = useState('');
+  const [ruolo, setRuolo] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [employees, setEmployees] = useState<any[]>([]);
 
-export default function AdminHome() {
-  const router = useRouter();
+  useEffect(() => { fetchEmployees(); },[]);
 
-  const menuItems = [
-    {
-      title: 'Torre di Controllo',
-      description: 'Gestisci le richieste e approva/respingi',
-      icon: <LayoutDashboard size={40} />,
-      color: 'bg-red-900',
-      path: '/admin/dashboard'
-    },
-    {
-      title: 'Gestione Dipendenti',
-      description: 'Aggiungi o modifica i collaboratori',
-      icon: <Users size={40} />,
-      color: 'bg-blue-600',
-      path: '/admin'
-    },
-    {
-      title: 'Calendario',
-      description: 'Visualizza le assenze nel tempo',
-      icon: <Calendar size={40} />,
-      color: 'bg-green-600',
-      path: '/admin/calendar'
-    },
-    {
-      title: 'Statistiche',
-      description: 'Grafici e report sull\'azienda',
-      icon: <BarChart3 size={40} />,
-      color: 'bg-purple-600',
-      path: '/admin/stats'
-    },
-  ];
+  async function fetchEmployees() {
+    const { data } = await supabase.from('tbper_employees').select('*').order('nome', { ascending: true });
+    setEmployees(data ||[]);
+  }
+
+  const handleAddEmployee = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await supabase.from('tbper_employees').insert([{
+      nome, cognome, ruolo, telefono,
+      pin: Math.floor(100000 + Math.random() * 900000).toString(),
+      unique_token: Math.random().toString(36).substring(2, 15)
+    }]);
+    setNome(''); setCognome(''); setRuolo(''); setTelefono('');
+    fetchEmployees();
+  };
+
+  const deleteEmployee = async (id: string) => {
+    if (confirm('Eliminare dipendente?')) {
+        await supabase.from('tbper_employees').delete().eq('id', id);
+        fetchEmployees();
+    }
+  };
 
   return (
-    <main className="min-h-screen bg-gray-100 p-6 md:p-12">
-      <div className="max-w-5xl mx-auto">
-        <div className="flex items-center gap-4 mb-12">
-          <button onClick={() => router.push('/')} className="p-2 hover:bg-gray-200 rounded-full transition">
-            <ArrowLeft size={24} />
-          </button>
-          <h1 className="text-4xl font-bold text-gray-800">Pannello Admin</h1>
+    <div className="p-8 max-w-6xl mx-auto">
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">Gestione Dipendenti</h1>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-md border-t-4 border-red-900">
+          <h2 className="text-xl font-semibold mb-6 flex items-center gap-2"><UserPlus /> Nuovo Dipendente</h2>
+          <form onSubmit={handleAddEmployee} className="space-y-4">
+            <input type="text" placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} className="w-full p-2 border rounded" required />
+            <input type="text" placeholder="Cognome" value={cognome} onChange={(e) => setCognome(e.target.value)} className="w-full p-2 border rounded" required />
+            <input type="text" placeholder="Ruolo" value={ruolo} onChange={(e) => setRuolo(e.target.value)} className="w-full p-2 border rounded" required />
+            <input type="text" placeholder="Telefono" value={telefono} onChange={(e) => setTelefono(e.target.value)} className="w-full p-2 border rounded" required />
+            <button type="submit" className="w-full bg-red-900 text-white py-2 rounded hover:bg-red-800">Genera Accesso</button>
+          </form>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-          {menuItems.map((item) => (
-            <button
-              key={item.title}
-              onClick={() => router.push(item.path)}
-              className="flex flex-col items-start p-8 bg-white rounded-2xl shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 text-left group"
-            >
-              {/* QUI ABBIAMO AGGIUNTO IL CONTENITORE PER TUTTE LE ICONE */}
-              <div className={`${item.color} text-white p-4 rounded-xl mb-6 group-hover:scale-110 transition-transform`}>
-                {item.icon}
-              </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">{item.title}</h2>
-              <p className="text-gray-500">{item.description}</p>
-            </button>
-          ))}
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-md overflow-hidden">
+          <table className="w-full text-left">
+            <thead className="bg-gray-50 border-b">
+              <tr><th className="p-4">Dipendente</th><th className="p-4">PIN</th><th className="p-4 text-center">Azioni</th></tr>
+            </thead>
+            <tbody>
+              {employees.map((emp) => (
+                <tr key={emp.id} className="border-b hover:bg-gray-50">
+                  <td className="p-4 font-bold">{emp.nome} {emp.cognome} <br/><span className="text-xs text-gray-500 font-normal">{emp.ruolo}</span></td>
+                  <td className="p-4 font-mono font-bold text-yellow-700">{emp.pin}</td>
+                  <td className="p-4 flex justify-center gap-2">
+                    <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/access/${emp.unique_token}`)} className="text-blue-600 p-2 hover:bg-blue-50 rounded"><LinkIcon size={18} /></button>
+                    <button onClick={() => deleteEmployee(emp.id)} className="text-red-600 p-2 hover:bg-red-50 rounded"><Trash2 size={18} /></button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

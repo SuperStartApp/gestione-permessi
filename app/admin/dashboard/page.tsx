@@ -19,6 +19,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 type RequestStatus = 'DA APPROVARE' | 'APPROVATA' | 'RESPINTA';
 type RequestType = 'FERIE' | 'PERMESSO' | 'MALATTIA' | 'CONGEDO' | 'LUTTO';
